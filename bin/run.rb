@@ -27,7 +27,7 @@ class CommandLineInterface
       user_input = gets.chomp
       ret_user = User.find_by(name: user_input)
         if ret_user == nil
-          puts "user name not found, please try again or create an account"
+          puts "User name not found, please try again or create an account"
           greeting_prompt
         else
           puts "Welcome back, #{ret_user.name}!"
@@ -36,7 +36,7 @@ class CommandLineInterface
     end
 
     def select_restaurant
-      @prompt.select("pick a restaurant") do |menu|
+      @prompt.select("Pick a restaurant") do |menu|
         Restaurant.all.map do |restaurant|
           menu.choice restaurant.name, -> { restaurant.make_reservation }
         end
@@ -45,10 +45,10 @@ class CommandLineInterface
     end
 
     def view_or_edit_reservations
-      @prompt.select("Choose a reservation to edit.") do |menu|
+      @prompt.select("Choose a reservation to edit.\n") do |menu|
         Reservation.all.each do |reservation|
           if reservation.user_id == @user.id
-            menu.choice "You have a reservation at #{reservation.restaurant.name} on #{reservation.date} at #{reservation.time}."
+            menu.choice "You have a reservation at #{reservation.restaurant.name} on #{reservation.date} at #{reservation.time}.", -> { reservation.update_reservation }
           end
         end
       end
@@ -58,23 +58,24 @@ class CommandLineInterface
 
 
 
+
     def greeting_prompt
       puts "Welcome To MaKe Res"
-      puts "your best way to make reservations"
+      puts "Your best way to make reservations"
 
-      @prompt.select("Select an option") do |menu|
-        menu.choice 'returning user', -> { returning_user }
-        menu.choice 'new user', -> { new_user }
+      @prompt.select("Select an option:\n") do |menu|
+        menu.choice 'I am a returning user', -> { returning_user }
+        menu.choice 'I am a new user', -> { new_user }
       end
     end
 
     def choices
-      @prompt.select("what do you want to do today?") do |menu|
-        menu.choice 'make reservation', -> { select_restaurant }
-        menu.choice 'view/edit your reservations', -> { @user.view_or_edit_reservations }
-        menu.choice 'view your reviews'
-        menu.choice 'review a restaurant'
-        menu.choice 'view your favorite restaurants'
+      @prompt.select("What do you want to do today?\n") do |menu|
+        menu.choice 'Make a reservation', -> { select_restaurant }
+        menu.choice 'View/edit my reservations', -> { view_or_edit_reservations }
+        menu.choice 'View your reviews'
+        menu.choice 'Review a restaurant'
+        menu.choice 'View your favorite restaurants'
       end
     end
 

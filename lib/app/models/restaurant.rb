@@ -48,9 +48,9 @@ class Restaurant < ActiveRecord::Base
      new_user = User.find_by(name: user_name)
      puts "For which date? "
      res_date = gets.chomp
-     puts "at what time?"
+     puts "At what time?"
      res_time = gets.chomp
-     puts "for how many people?(1-7 people)"
+     puts "For how many people?(1-7 people)"
      res_num = gets.chomp
 
      reservation = Reservation.create(user_id: new_user.id, restaurant_id: self.id, time: res_time, date: res_date, number_of_people: res_num )
