@@ -6,3 +6,5 @@ require_all 'lib'
 require 'faker'
 require 'rest-client'
 require 'json'
+
+ActiveRecord::Base.logger = nil

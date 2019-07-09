@@ -5,6 +5,7 @@ class CommandLineInterface
 
   def initialize
     @prompt = TTY::Prompt.new
+    @user = nil
   end
 
 
@@ -13,6 +14,7 @@ class CommandLineInterface
       user_input = gets.chomp
       new_user = User.create(name: user_input)
       puts "Welcome to Make Res, #{new_user.name}"
+      @user = new_user
     end
 
     def returning_user
@@ -25,6 +27,7 @@ class CommandLineInterface
         else
           puts "Welcome back, #{ret_user.name}!"
         end
+        @user = ret_user
     end
 
     def select_restaurant
@@ -32,6 +35,7 @@ class CommandLineInterface
         Restaurant.all.map do |restaurant|
           menu.choice restaurant.name, -> { restaurant.make_reservation }
         end
+        menu.choice "back", -> { choices }
         menu.choice "exit"
       end
     end
@@ -54,12 +58,14 @@ class CommandLineInterface
     def choices
       @prompt.select("what do you want to do today?") do |menu|
         menu.choice 'make reservation', -> { select_restaurant }
-        menu.choice 'view your reservations'
-        menu.choice 'view your reviews'
+        menu.choice 'view your reservations', -> { @user.reservations }
+        menu.choice 'edit a reservation', -> { @user.edit_reservation }
+        menu.choice 'view your reviews', -> { @user.reviews }
         menu.choice 'review a restaurant'
         menu.choice 'view your favorite restaurants'
       end
     end
+
 
     def run
       greeting_prompt
