@@ -5,15 +5,27 @@ class User < ActiveRecord::Base
   has_many :restaurants, through: :reservations
   has_many :reviews
 
-  def view_or_edit_reservations
-    puts "Editting responses from User class"
-    CommandLineInterface.prompt.select("Choose a reservation to edit.") do |menu|
-      Reservation.all.each do |reservation|
-        if reservation.user_id == self.id
-          menu.choice "You have a reservation at #{reservation.restaurant.name} on #{reservation.date} at #{reservation.time}."
-        end
-      end
+  def view_reservation
+    reservation = self.reservations.select do |reservation|
+      reservation.id == self.id
+      binding.pry
     end
+
+    puts "You have a reservation at #{reservation.restaurant.name} on #{reservation.date} at #{reservation.time} for #{reservation.number_of_people}."
+    @prompt.select("Do you want to :") do |menu|
+      menu.choice "edit", -> {update_reservation}
+      menu.choice "delete", -> {"delete reservation"}
+    end
+  end
+
+  def update_reservation
+
+    puts "Type in the new date."
+    new_date = gets.chomp
+    self.update(self.id, date: new_date)
+    puts "You have a reservation at #{self.restaurant.name} on #{self.date} at #{self.time}."
+  end
+
   end
   # def make_reservation
   #   # puts "please select cuisine, or choose all:"
@@ -33,4 +45,4 @@ class User < ActiveRecord::Base
   # end
 
 
-end
+# end
