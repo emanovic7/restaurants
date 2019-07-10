@@ -42,6 +42,7 @@ class CommandLineInterface
             menu.choice "#{@reservation.restaurant.name} - #{@reservation.time}", -> {view_reservation}
           end
         end
+        menu.choice "back", -> { choices }
       end
 
     #  puts "You have a reservation at #{reservation.restaurant.name} on #{reservation.date} at #{reservation.time} for #{reservation.number_of_people}."
@@ -59,6 +60,7 @@ class CommandLineInterface
 
 
     ##########################RESTAURANT METHODS#############################
+    #SELECT
     def select_restaurant
       @prompt.select("pick a restaurant") do |menu|
         Restaurant.all.map do |restaurant|
@@ -69,6 +71,7 @@ class CommandLineInterface
       end
     end
 
+    #VIEW
     def view_reservation
        puts "You have a reservation
        at #{@reservation.restaurant.name}
@@ -78,11 +81,67 @@ class CommandLineInterface
 
 
         @prompt.select("You can :") do |menu|
-          menu.choice "edit reservation", -> {update_reservation}
-          menu.choice "delete reservation", -> {"delete reservation"}
+          menu.choice "edit reservation", -> { update_reservation }
+          menu.choice "delete reservation", -> { delete_reservation }
+          menu.choice "back", -> { view_all_reservations }
+        end
+    end
+
+
+    #DELETE
+    def delete_reservation
+      @prompt.select("are you sure?") do |menu|
+        menu.choice "yes", -> { @reservation.destroy }
+        menu.choice "no", -> { view_reservation }
+      end
+      view_all_reservations
+    end
+
+
+    #UPDATE
+    def update_reservation
+      @prompt.select("What would you like to change?") do |menu|
+        menu.choice 'I want to change the date', -> { change_date }
+        menu.choice 'I want to change the time', -> { change_time }
+        menu.choice 'I want to change the number of people in my party', -> { change_num_people }
+      end
+    end
+
+        def change_date
+          puts "When would you like to change the date to?"
+          new_date = gets.chomp
+          @reservation.update(date: new_date)
+          puts "Your reservation now is
+          at #{@reservation.restaurant.name}
+          on #{@reservation.date}
+          at #{@reservation.time}
+          for #{@reservation.number_of_people} people!"
+          view_all_reservations
         end
 
-    end
+        def change_time
+          puts "When would you like to change the time to?"
+          new_time = gets.chomp
+          @reservation.update(time: new_time)
+          puts "Your reservation now is
+          at #{@reservation.restaurant.name}
+          on #{@reservation.date}
+          at #{@reservation.time}
+          for #{@reservation.number_of_people} people!"
+          view_all_reservations
+        end
+
+        def change_num_people
+          puts "When would you like to change the number of people in your party to?"
+          new_num = gets.chomp
+          @reservation.update(number_of_people: new_num)
+          puts "Your reservation now is
+          at #{@reservation.restaurant.name}
+          on #{@reservation.date}
+          at #{@reservation.time}
+          for #{@reservation.number_of_people} people!"
+          view_all_reservations
+        end
 
 
 
