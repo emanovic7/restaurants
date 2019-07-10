@@ -31,13 +31,6 @@ class Restaurant < ActiveRecord::Base
    end
 
    def make_reservation
-     # puts "please select cuisine, or choose all:"
-     # prompt.select("please select cuisine, or choose all:" ) do |menu|
-     #   menu.choice 'McDonalds'
-     #   menu.choice 'Chipotle'
-     #   menu.choice 'Blossom'
-     # end
-
      #ask for name
      #ask for date (09-12-19 Format)
      #ask for time

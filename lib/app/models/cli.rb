@@ -6,6 +6,7 @@ class CommandLineInterface
     @prompt = TTY::Prompt.new
     @user = nil
     @reservation = nil
+    @restaurant = nil
   end
 
 
@@ -64,11 +65,37 @@ class CommandLineInterface
     def select_restaurant
       @prompt.select("pick a restaurant") do |menu|
         Restaurant.all.map do |restaurant|
-          menu.choice restaurant.name, -> { restaurant.make_reservation }
+          @restaurant = restaurant
+          menu.choice restaurant.name, -> { make_reservation }
         end
         menu.choice "back", -> { choices }
         menu.choice "exit"
       end
+    end
+
+    #MAKE RESERVATION
+    def make_reservation
+      #ask for name
+      #ask for date (09-12-19 Format)
+      #ask for time
+      puts "Please enter your name: "
+      user_name = gets.chomp
+      new_user = User.find_by(name: user_name)
+      puts "For which date? "
+      res_date = gets.chomp
+      puts "at what time?"
+      res_time = gets.chomp
+      puts "for how many people?(1-7 people)"
+      res_num = gets.chomp
+
+      reservation = Reservation.create(user_id: new_user.id, restaurant_id: @restaurant.id, time: res_time, date: res_date, number_of_people: res_num )
+
+      puts "You have just made a reservation at #{reservation.restaurant.name}"
+      puts "on #{reservation.date}"
+      puts "at #{reservation.time}"
+      puts "for #{reservation.number_of_people} person(s)"
+
+      choices
     end
 
     #VIEW
@@ -160,8 +187,7 @@ class CommandLineInterface
     def choices
       @prompt.select("what do you want to do today?") do |menu|
         menu.choice 'make reservation', -> { select_restaurant }
-        menu.choice 'view your reservations', -> { view_all_reservations }
-        menu.choice 'edit a reservation', -> { @user.edit_reservation }
+        menu.choice 'view/edit your reservations', -> { view_all_reservations }
         menu.choice 'view your reviews', -> { @user.reviews }
         menu.choice 'review a restaurant'
         menu.choice 'view your favorite restaurants'
