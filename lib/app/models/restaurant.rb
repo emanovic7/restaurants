@@ -53,7 +53,7 @@ class Restaurant < ActiveRecord::Base
 
      reservation = Reservation.create(user_id: new_user.id, restaurant_id: self.id, time: res_time, date: res_date, number_of_people: res_num )
 
-     puts "You have just made a reservation for #{reservation.restaurant.name}"
+     puts "You have just made a reservation at #{reservation.restaurant.name}"
      puts "on #{reservation.date}"
      puts "at #{reservation.time}"
      puts "for #{reservation.number_of_people} person(s)"

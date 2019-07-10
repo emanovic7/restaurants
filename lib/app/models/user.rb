@@ -43,6 +43,19 @@ class User < ActiveRecord::Base
     end
   end
 
+ #  def view_reservation
+ #  #  reservation = self.reservations.select do |reservation|
+ #  #    reservation.id == self.id
+ #  #    binding.pry
+ #  #  end
+ #
+ #   #puts "You have a reservation at #{reservation.restaurant.name} on #{reservation.date} at #{reservation.time} for #{reservation.number_of_people}."
+ #   @prompt.select("Do you want to :") do |menu|
+ #     menu.choice "edit", -> {update_reservation}
+ #     menu.choice "delete", -> {"delete reservation"}
+ #   end
+ # end
+
 
   def edit_reservation
     "edit"
