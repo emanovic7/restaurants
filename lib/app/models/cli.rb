@@ -7,6 +7,7 @@ class CommandLineInterface
     @user = nil
     @reservation = nil
     @restaurant = nil
+    @review = nil
   end
 
     ###############################USER METHODS#######################################
@@ -56,6 +57,19 @@ class CommandLineInterface
     #  end
    end
 
+   def view_favorite_restaurants
+     all_favorite_restaurant_reviews = @user.reviews.select do |review|
+      review.rating == 5
+     end
+
+     unique_favorite_restaurants_reviews = all_favorite_restaurant_reviews.uniq
+
+     unique_favorite_restaurants_reviews.each do |review|
+       puts review.restaurant
+     end
+     choices
+   end
+
 
 
 
@@ -69,9 +83,16 @@ class CommandLineInterface
       @prompt.select("pick a restaurant") do |menu|
         Restaurant.all.map do |restaurant|
           @restaurant = restaurant
-          menu.choice restaurant.name, -> { make_reservation }
+          menu.choice restaurant.name, -> { reserve_or_review }
         end
         menu.choice "back", -> { choices }
+      end
+    end
+
+    def reserve_or_review
+      @prompt.select("Would you like to reserve or leave a review for this restaurant?") do |menu|
+        menu.choice "Make a reservation", -> { make_reservation }
+        menu.choice "Leave a review", -> { leave_review }
       end
     end
 
@@ -89,8 +110,6 @@ class CommandLineInterface
       res_time = gets.chomp
       puts "for how many people?(1-7 people)"
       res_num = gets.chomp
-
-      binding.pry
 
       reservation = Reservation.create(user_id: @user.id, restaurant_id: @restaurant.id, time: res_time, date: res_date, number_of_people: res_num )
 
@@ -138,44 +157,100 @@ class CommandLineInterface
       end
     end
 
-        def change_date
-          puts "When would you like to change the date to?"
-          new_date = gets.chomp
-          @reservation.update(date: new_date)
-          puts "Your reservation now is
-          at #{@reservation.restaurant.name}
-          on #{@reservation.date}
-          at #{@reservation.time}
-          for #{@reservation.number_of_people} people!"
-          view_all_reservations
+    def change_date
+      puts "When would you like to change the date to?"
+      new_date = gets.chomp
+      @reservation.update(date: new_date)
+      puts "Your reservation now is
+      at #{@reservation.restaurant.name}
+      on #{@reservation.date}
+      at #{@reservation.time}
+      for #{@reservation.number_of_people} people!"
+      view_all_reservations
+    end
+
+    def change_time
+      puts "When would you like to change the time to?"
+      new_time = gets.chomp
+      @reservation.update(time: new_time)
+      puts "Your reservation now is
+      at #{@reservation.restaurant.name}
+      on #{@reservation.date}
+      at #{@reservation.time}
+      for #{@reservation.number_of_people} people!"
+      view_all_reservations
+    end
+
+    def change_num_people
+      puts "When would you like to change the number of people in your party to?"
+      new_num = gets.chomp
+      @reservation.update(number_of_people: new_num)
+      puts "Your reservation now is
+      at #{@reservation.restaurant.name}
+      on #{@reservation.date}
+      at #{@reservation.time}
+      for #{@reservation.number_of_people} people!"
+      view_all_reservations
+    end
+
+    ########################REVIEW METHODS############################
+    def leave_review
+      if @restaurant.users.include?(@user)
+        puts "What would you rate this restaurant from 1-5?"
+        rating = gets.chomp
+
+        puts "What comments do you have about this restaurant?"
+        content = gets.chomp
+        new_review = Review.create(rating: rating, content: content, user_id: @user.id, restaurant_id: @restaurant.id)
+        choices
+      else
+        @prompt.select("You haven't visited this restaurant, would you like to make a reservation?") do |menu|
+          menu.choice "yes", -> { make_reservation }
+          menu.choice "no", -> { choices }
         end
 
-        def change_time
-          puts "When would you like to change the time to?"
-          new_time = gets.chomp
-          @reservation.update(time: new_time)
-          puts "Your reservation now is
-          at #{@reservation.restaurant.name}
-          on #{@reservation.date}
-          at #{@reservation.time}
-          for #{@reservation.number_of_people} people!"
-          view_all_reservations
+      end
+    end
+
+
+    def reviews
+      @prompt.select("Choose a review to edit or delete") do |menu|
+
+        Review.all.map do |review|
+          if review.user_id == @user.id
+            @review = review
+            menu.choice "Review: #{review.content}\nRestaurant: #{review.restaurant}\nrating: #{review.rating}", -> { edit_or_review }
+            puts "\n"
+          end
         end
 
-        def change_num_people
-          puts "When would you like to change the number of people in your party to?"
-          new_num = gets.chomp
-          @reservation.update(number_of_people: new_num)
-          puts "Your reservation now is
-          at #{@reservation.restaurant.name}
-          on #{@reservation.date}
-          at #{@reservation.time}
-          for #{@reservation.number_of_people} people!"
-          view_all_reservations
-        end
+        menu.choice "back", -> { choices }
+      end
+    end
 
+    def edit_or_review
+      @prompt.select("Would you like to edit or delete this review?") do |menu|
+        menu.choice "Edit the review", -> { edit_review }
+        menu.choice "Delete the review", -> { delete_review }
+        menu.choice "back", -> { choices }
+      end
+    end
 
+    def edit_review
+      puts "What would you rate this restaurant from 1-5?"
+      rating = gets.chomp
+      puts "What comments do you have about this restaurant?"
+      content = gets.chomp
 
+      @review.update(rating: rating, content: content, user_id: @user.id, restaurant_id: @restaurant.id)
+      choices
+    end
+
+    def delete_review
+      @review.destroy
+      puts "The review has been deleted"
+      choices
+    end
 
     ########################PROMPT METHODS #########################################################
     def greeting_prompt
@@ -190,11 +265,10 @@ class CommandLineInterface
 
     def choices
       @prompt.select("what do you want to do today?") do |menu|
-        menu.choice 'make reservation', -> { select_restaurant }
-        menu.choice 'view/edit your reservations', -> { view_all_reservations }
-        menu.choice 'view your reviews', -> { @user.reviews }
-        menu.choice 'review a restaurant'
-        menu.choice 'view your favorite restaurants'
+        menu.choice 'Choose a restaurant to make a reservation or leave a review', -> { select_restaurant }
+        menu.choice 'View/edit your reservations', -> { view_all_reservations }
+        menu.choice 'See your reviews', -> { reviews }
+        menu.choice 'View your favorite restaurants', -> { view_favorite_restaurants }
         menu.choice 'exit'
       end
     end
