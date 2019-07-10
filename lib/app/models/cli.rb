@@ -9,10 +9,6 @@ class CommandLineInterface
     @restaurant = nil
   end
 
-
-
-
-
     ###############################USER METHODS#######################################
     def new_user
       puts "Please enter your name: "
@@ -36,6 +32,13 @@ class CommandLineInterface
     end
 
     def view_all_reservations
+      if @user.reservations.length == 0
+        @prompt.select("You have no reservations at this time, would you like to make one?") do |menu|
+          menu.choice "yes", -> { select_restaurant }
+          menu.choice "no", -> { choices }
+        end
+     end
+
       @prompt.select("Here are your reservations") do |menu|
         Reservation.all.map do |reservation|
           if reservation.user_id == @user.id
@@ -69,7 +72,6 @@ class CommandLineInterface
           menu.choice restaurant.name, -> { make_reservation }
         end
         menu.choice "back", -> { choices }
-        menu.choice "exit"
       end
     end
 
@@ -78,9 +80,9 @@ class CommandLineInterface
       #ask for name
       #ask for date (09-12-19 Format)
       #ask for time
-      puts "Please enter your name: "
-      user_name = gets.chomp
-      new_user = User.find_by(name: user_name)
+      # puts "Please enter your name: "
+      # user_name = gets.chomp
+      # new_user = User.find_by(name: user_name)
       puts "For which date? "
       res_date = gets.chomp
       puts "at what time?"
@@ -88,7 +90,9 @@ class CommandLineInterface
       puts "for how many people?(1-7 people)"
       res_num = gets.chomp
 
-      reservation = Reservation.create(user_id: new_user.id, restaurant_id: @restaurant.id, time: res_time, date: res_date, number_of_people: res_num )
+      binding.pry
+
+      reservation = Reservation.create(user_id: @user.id, restaurant_id: @restaurant.id, time: res_time, date: res_date, number_of_people: res_num )
 
       puts "You have just made a reservation at #{reservation.restaurant.name}"
       puts "on #{reservation.date}"
@@ -191,6 +195,7 @@ class CommandLineInterface
         menu.choice 'view your reviews', -> { @user.reviews }
         menu.choice 'review a restaurant'
         menu.choice 'view your favorite restaurants'
+        menu.choice 'exit'
       end
     end
 
