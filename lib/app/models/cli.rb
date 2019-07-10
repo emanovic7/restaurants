@@ -84,6 +84,50 @@ class CommandLineInterface
 
     end
 
+    def update_reservation
+      @prompt.select("What would you like to change?") do |menu|
+        menu.choice 'I want to change the date', -> { change_date }
+        menu.choice 'I want to change the time', -> { change_time }
+        menu.choice 'I want to change the number of people in my party', -> { change_num_people }
+      end
+    end
+
+    def change_date
+      puts "When would you like to change the date to?"
+      new_date = gets.chomp
+      @reservation.update(date: new_date)
+      puts "Your reservation now is
+      at #{@reservation.restaurant.name}
+      on #{@reservation.date}
+      at #{@reservation.time}
+      for #{@reservation.number_of_people} people!"
+      view_all_reservations
+    end
+
+    def change_time
+      puts "When would you like to change the time to?"
+      new_time = gets.chomp
+      @reservation.update(time: new_time)
+      puts "Your reservation now is
+      at #{@reservation.restaurant.name}
+      on #{@reservation.date}
+      at #{@reservation.time}
+      for #{@reservation.number_of_people} people!"
+      view_all_reservations
+    end
+
+    def change_num_people
+      puts "When would you like to change the number of people in your party to?"
+      new_num = gets.chomp
+      @reservation.update(number_of_people: new_num)
+      puts "Your reservation now is
+      at #{@reservation.restaurant.name}
+      on #{@reservation.date}
+      at #{@reservation.time}
+      for #{@reservation.number_of_people} people!"
+      view_all_reservations
+    end
+
 
 
 
