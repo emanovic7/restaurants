@@ -6,6 +6,7 @@ class CommandLineInterface
     @prompt = TTY::Prompt.new
     @user = nil
     @reservation = nil
+    @restaurant = nil
   end
 
 
@@ -35,6 +36,15 @@ class CommandLineInterface
     end
 
     def view_all_reservations
+      if @user.reservations.length == 0
+        binding.pry
+        @prompt.select("You have no reservations at this time, would you like to make one?") do |menu|
+          menu.choice "yes", -> { make_reservation }
+          menu.choice "no", -> { choices }
+        end
+      end
+
+
       @prompt.select("Here are your reservations") do |menu|
         Reservation.all.map do |reservation|
           if reservation.user_id == @user.id
@@ -64,7 +74,8 @@ class CommandLineInterface
     def select_restaurant
       @prompt.select("pick a restaurant") do |menu|
         Restaurant.all.map do |restaurant|
-          menu.choice restaurant.name, -> { restaurant.make_reservation }
+          @restaurant = restaurant
+          menu.choice restaurant.name, -> { make_reservation }
         end
         menu.choice "back", -> { choices }
         menu.choice "exit"
@@ -85,6 +96,35 @@ class CommandLineInterface
           menu.choice "delete reservation", -> { delete_reservation }
           menu.choice "back", -> { view_all_reservations }
         end
+    end
+
+    def make_reservation
+      # puts "please select cuisine, or choose all:"
+      # prompt.select("please select cuisine, or choose all:" ) do |menu|
+      #   menu.choice 'McDonalds'
+      #   menu.choice 'Chipotle'
+      #   menu.choice 'Blossom'
+      # end
+
+      #ask for name
+      #ask for date (09-12-19 Format)
+      #ask for time
+
+      puts "For which date? "
+      res_date = gets.chomp
+      puts "at what time?"
+      res_time = gets.chomp
+      puts "for how many people?(1-7 people)"
+      res_num = gets.chomp
+
+      #binding.pry
+
+      reservation = Reservation.create(user_id: @user.id, restaurant_id: @restaurant.id, time: res_time, date: res_date, number_of_people: res_num )
+
+      puts "You have just made a reservation at #{reservation.restaurant.name}"
+      puts "on #{reservation.date}"
+      puts "at #{reservation.time}"
+      puts "for #{reservation.number_of_people} person(s)"
     end
 
 
@@ -165,6 +205,7 @@ class CommandLineInterface
         menu.choice 'view your reviews', -> { @user.reviews }
         menu.choice 'review a restaurant'
         menu.choice 'view your favorite restaurants'
+        menu.choice "exit"
       end
     end
 
