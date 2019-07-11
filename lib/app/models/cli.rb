@@ -38,11 +38,12 @@ class CommandLineInterface
         end
      end
 
+     ################ Changes: view_reservation(reservation) parameter added to stop looping to end, reassigning @reservation in view_reservation method
       @prompt.select("Here are your reservations") do |menu|
         Reservation.all.map do |reservation|
+          # @reservation = reservation
           if reservation.user_id == @user.id
-            @reservation = reservation
-            menu.choice "#{@reservation.restaurant.name} - #{@reservation.time}", -> {view_reservation}
+            menu.choice "#{reservation.restaurant.name} - #{reservation.time}", -> { view_reservation(reservation) }
           end
         end
         menu.choice "back", -> { choices }
@@ -56,14 +57,17 @@ class CommandLineInterface
    end
 
    def view_favorite_restaurants
-     all_favorite_restaurant_reviews = @user.reviews.select do |review|
-      review.rating == 5
+     all_favorite_restaurant_reviews_array = []
+
+     all_favorite_restaurant_reviews = @user.reviews.each do |review|
+       if review.rating == 5
+         all_favorite_restaurant_reviews_array << review.restaurant
+      end
      end
 
-     unique_favorite_restaurants_reviews = all_favorite_restaurant_reviews.uniq
-
-     unique_favorite_restaurants_reviews.each do |review|
-       puts review.restaurant
+     all_favorite_restaurant_reviews_array.uniq!
+     all_favorite_restaurant_reviews_array.each do |restaurant_name|
+       puts restaurant_name
      end
      choices
    end
@@ -80,14 +84,15 @@ class CommandLineInterface
     def select_restaurant
       @prompt.select("pick a restaurant") do |menu|
         Restaurant.all.map do |restaurant|
-          @restaurant = restaurant
-          menu.choice restaurant.name, -> { reserve_or_review }
+          # @restaurant = restaurant
+          menu.choice restaurant.name, -> { reserve_or_review(restaurant.name) }
         end
         menu.choice "back", -> { choices }
       end
     end
 
-    def reserve_or_review
+    def reserve_or_review(restaurant_name)
+      @restaurant = Restaurant.find_by(name: restaurant_name)
       @prompt.select("Would you like to reserve or leave a review for this restaurant?") do |menu|
         menu.choice "Make a reservation", -> { make_reservation }
         menu.choice "Leave a review", -> { write_review }
@@ -102,6 +107,7 @@ class CommandLineInterface
       # puts "Please enter your name: "
       # user_name = gets.chomp
       # new_user = User.find_by(name: user_name)
+      puts "You are making a reservation at #{@restaurant.name}:"
       puts "For which date? "
       res_date = gets.chomp
       puts "at what time?"
@@ -120,7 +126,9 @@ class CommandLineInterface
     end
 
     #VIEW
-    def view_reservation
+    ############ Changes: reassigned @reservation
+    def view_reservation(reservation)
+      @reservation = reservation
        puts "You have a reservation
        at #{@reservation.restaurant.name}
        on #{@reservation.date}
@@ -140,7 +148,7 @@ class CommandLineInterface
     def delete_reservation
       @prompt.select("are you sure?") do |menu|
         menu.choice "yes", -> { @reservation.destroy }
-        menu.choice "no", -> { view_reservation }
+        menu.choice "no", -> { view_reservation(@reservation) }
       end
       view_all_reservations
     end
@@ -193,7 +201,6 @@ class CommandLineInterface
 
     ########################REVIEW METHODS############################
     def write_review
-      binding.pry
       if !@restaurant.users.include?(@user)
         @prompt.select("You haven't visited this restaurant, would you like to make a reservation?") do |menu|
           menu.choice "yes", -> { make_reservation }
@@ -218,12 +225,11 @@ class CommandLineInterface
         select_restaurant
       end
 
-
+      ############### Changes: passed in review argument edit_or_delete_review(review) to stop the loop from pointing to the last review
       @prompt.select("Choose a review to edit or delete") do |menu|
         Review.all.map do |review|
           if review.user_id == @user.id
-            @review = review
-            menu.choice "Review: #{review.content}\nRestaurant: #{review.restaurant}\nrating: #{review.rating}", -> { edit_or_review }
+            menu.choice "Review: #{review.content}\nRestaurant: #{review.restaurant}\nrating: #{review.rating}", -> { edit_or_delete_review(review) }
             puts "\n"
           end
         end
@@ -232,8 +238,9 @@ class CommandLineInterface
     end
 
 
-
-    def edit_or_review
+    ############### Changes: passed in review as parameter
+    def edit_or_delete_review(review)
+      @review = review
       @prompt.select("Would you like to edit or delete this review?") do |menu|
         menu.choice "Edit the review", -> { edit_review }
         menu.choice "Delete the review", -> { delete_review }
@@ -251,10 +258,13 @@ class CommandLineInterface
       choices
     end
 
+    ############### Changes: added yes/no choice
     def delete_review
-      @review.destroy
-      puts "The review has been deleted"
-      choices
+      @prompt.select("are you sure?") do |menu|
+        menu.choice "yes", -> { @review.destroy }
+        menu.choice "no", -> { reviews }
+      end
+      reviews
     end
 
     ########################PROMPT METHODS #########################################################
@@ -272,7 +282,8 @@ class CommandLineInterface
       @prompt.select("what do you want to do today?") do |menu|
         menu.choice 'Choose a restaurant to make a reservation or leave a review', -> { select_restaurant }
         menu.choice 'View/edit your reservations', -> { view_all_reservations }
-        menu.choice 'See your reviews', -> { reviews }
+        ################## Changes: "see or edit reviews" for clarity
+        menu.choice 'See or edit your reviews', -> { reviews }
         menu.choice 'View your favorite restaurants', -> { view_favorite_restaurants }
         menu.choice 'exit'
       end
