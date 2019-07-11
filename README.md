@@ -13,4 +13,4 @@ HOW TO RUN APP
   3. pick restaurant to make a reservation, or review.
 
 
-COPYRIGHT EMMANUEL OWUSU, LAWSON HUNG - 2019   
+COPYRIGHT EMMANUEL OWUSU --- LAWSON HUNG - 2019   
