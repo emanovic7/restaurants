@@ -289,8 +289,8 @@ class CommandLineInterface
       @prompt.select("Select an option") do |menu|
         menu.choice 'returning user', -> { returning_user }
         menu.choice 'new user', -> { new_user }
-        menu.choice 'quit app'
         menu.choice 'just a quick search', -> { yelp_results }
+        menu.choice 'quit app'
       end
     end
 
@@ -314,6 +314,8 @@ class CommandLineInterface
 
 
     def yelp_results
+      puts `clear`
+
       final_hash = {}
 
       puts "what are you looking for?"
@@ -337,6 +339,7 @@ class CommandLineInterface
         puts "#{i+1}. #{restaurant} - #{restaurant_data[0]} - #{restaurant_data[1]}."
       end
 
+      greeting_prompt
     end
 
 

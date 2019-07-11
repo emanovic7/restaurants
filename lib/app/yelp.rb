@@ -13,7 +13,7 @@ class Yelp
     DEFAULT_BUSINESS_ID = "yelp-san-francisco"
     DEFAULT_TERM = "restaurant"
     DEFAULT_LOCATION = "New York"
-    SEARCH_LIMIT = 15
+    SEARCH_LIMIT = 20
 
     def self.search(term, location="new york")
       url = "#{API_HOST}#{SEARCH_PATH}"
