@@ -7,13 +7,13 @@ class User < ActiveRecord::Base
 
 
 
-  def reservations
-    Reservation.all.map do |reservation|
-        if reservation.user_id == self.id
-          puts "#{reservation.restaurant.name} - #{reservation.date} at #{reservation.time}"
-        end
-    end
-  end
+  # def reservations
+  #   Reservation.all.map do |reservation|
+  #       if reservation.user_id == self.id
+  #         puts "#{reservation.restaurant.name} - #{reservation.date} at #{reservation.time}"
+  #       end
+  #   end
+  # end
   # self.reservations.all.each_with_index(1) do |reservation, i|
 
 
@@ -27,6 +27,6 @@ class User < ActiveRecord::Base
     end
   end
 
-  
+
 
 end

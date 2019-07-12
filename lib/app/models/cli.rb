@@ -20,6 +20,8 @@ class CommandLineInterface
       puts "Welcome to Make Res, #{new_user.name}"
       @user = new_user
 
+      puts `clear`
+
       choices
     end
 
@@ -32,14 +34,16 @@ class CommandLineInterface
           puts "user name not found, please try again or create an account"
           greeting_prompt
         else
+          puts `clear`
+          @user = ret_user
           puts "Welcome back, #{ret_user.name}!"
           choices
         end
-        @user = ret_user
     end
 
     def view_all_reservations
       puts `clear`
+
       if @user.reservations.length == 0
         @prompt.select("You have no reservations at this time, would you like to make one?") do |menu|
           menu.choice "yes", -> { select_restaurant }
@@ -81,7 +85,7 @@ class CommandLineInterface
     ##########################RESTAURANT METHODS#############################
     #SELECT
     def select_restaurant
-      puts `clear`
+      #puts `clear`
       @prompt.select("pick a restaurant") do |menu|
         Restaurant.all.map do |restaurant|
           # @restaurant = restaurant
@@ -101,7 +105,6 @@ class CommandLineInterface
 
     #MAKE RESERVATION
     def make_reservation
-      puts `clear`
       #ask for name
       #ask for date (09-12-19 Format)
       #ask for time
@@ -113,11 +116,11 @@ class CommandLineInterface
       res_date = gets.chomp
       puts "at what time?"
       res_time = gets.chomp
-      puts "for how many people?(1-7 people)"
+      puts "for how many people?"
       res_num = gets.chomp
-
+      # binding.pry
       reservation = Reservation.create(user_id: @user.id, restaurant_id: @restaurant.id, time: res_time, date: res_date, number_of_people: res_num )
-
+      puts "#########################################################################"
       puts "You have just made a reservation at #{reservation.restaurant.name}"
       puts "on #{reservation.date}"
       puts "at #{reservation.time}"
@@ -295,7 +298,7 @@ class CommandLineInterface
     end
 
     def choices
-      puts `clear`
+      #puts `clear`
       @prompt.select("what do you want to do today?") do |menu|
         menu.choice 'Choose a restaurant to make a reservation or leave a review', -> { select_restaurant }
         menu.choice 'View/edit your reservations', -> { view_all_reservations }
