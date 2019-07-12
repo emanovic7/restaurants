@@ -6,5 +6,8 @@ require_all 'lib'
 require 'faker'
 require 'rest-client'
 require 'json'
+require 'colorize'
+require 'colorized_string'
+require 'artii'
 
 ActiveRecord::Base.logger = nil

@@ -30,27 +30,7 @@ class Restaurant < ActiveRecord::Base
      return "#{self.name} has an average rating of #{total_rating/self.reviews.length}"
    end
 
-   def make_reservation
-     #ask for name
-     #ask for date (09-12-19 Format)
-     #ask for time
-     puts "Please enter your name: "
-     user_name = gets.chomp
-     new_user = User.find_by(name: user_name)
-     puts "For which date? "
-     res_date = gets.chomp
-     puts "at what time?"
-     res_time = gets.chomp
-     puts "for how many people?(1-7 people)"
-     res_num = gets.chomp
 
-     reservation = Reservation.create(user_id: new_user.id, restaurant_id: self.id, time: res_time, date: res_date, number_of_people: res_num )
-
-     puts "You have just made a reservation at #{reservation.restaurant.name}"
-     puts "on #{reservation.date}"
-     puts "at #{reservation.time}"
-     puts "for #{reservation.number_of_people} person(s)"
-   end
 
 
 
