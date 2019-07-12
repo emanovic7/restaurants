@@ -42,6 +42,8 @@ class CommandLineInterface
 
     def view_all_reservations
 
+      puts `clear`
+
       if @user.reservations.length == 0
         @prompt.select("You have no reservations at this time, would you like to make one?") do |menu|
           menu.choice "yes", -> { select_restaurant }
@@ -326,7 +328,6 @@ class CommandLineInterface
 
       greeting_prompt
     end
-
 
     def run
       header_message
