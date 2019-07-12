@@ -1,5 +1,4 @@
 
-
 class CommandLineInterface
 
   def initialize
@@ -43,29 +42,25 @@ class CommandLineInterface
       @prompt.select("Here are your reservations") do |menu|
         Reservation.all.map do |reservation|
           if reservation.user_id == @user.id
-            @reservation = reservation
-            menu.choice "#{@reservation.restaurant.name} - #{@reservation.time}", -> {view_reservation}
+            menu.choice "#{reservation.restaurant.name} - #{reservation.time}", -> { view_reservation(reservation) }
           end
         end
         menu.choice "back", -> { choices }
       end
-
-    #  puts "You have a reservation at #{reservation.restaurant.name} on #{reservation.date} at #{reservation.time} for #{reservation.number_of_people}."
-    #  @prompt.select("Do you want to :") do |menu|
-    #    menu.choice "edit", -> {update_reservation}
-    #    menu.choice "delete", -> {"delete reservation"}
-    #  end
    end
 
    def view_favorite_restaurants
-     all_favorite_restaurant_reviews = @user.reviews.select do |review|
-      review.rating == 5
+     all_favorite_restaurant_reviews_array = []
+
+     @user.reviews.each do |review|
+       if review.rating == 5
+         all_favorite_restaurant_reviews_array << review.restaurant
+      end
      end
 
-     unique_favorite_restaurants_reviews = all_favorite_restaurant_reviews.uniq
-
-     unique_favorite_restaurants_reviews.each do |review|
-       puts review.restaurant
+     all_favorite_restaurant_reviews_array.uniq!
+     all_favorite_restaurant_reviews_array.each do |restaurant_name|
+       puts restaurant_name
      end
      choices
    end
@@ -80,19 +75,33 @@ class CommandLineInterface
     ##########################RESTAURANT METHODS#############################
     #SELECT
     def select_restaurant
+      all_restaurants = []
+      puts "What cuisine would you like?"
+      cuisine = gets.chomp
+      puts "Where in New York would you like to search for?"
+      area = gets.chomp
+      YelpApiAdapter.search(cuisine, area).each do |restaurant_hash|
+        restaurant_hash.map do |restaurant_key, restaurant_value|
+          if restaurant_key == "name"
+            all_restaurants << restaurant_value
+          end
+        end
+      end
+
       @prompt.select("pick a restaurant") do |menu|
-        Restaurant.all.map do |restaurant|
-          @restaurant = restaurant
-          menu.choice restaurant.name, -> { reserve_or_review }
+        all_restaurants.map do |restaurant|
+        # Restaurant.all.map do |restaurant|
+          menu.choice restaurant, -> { reserve_or_review(restaurant) }
         end
         menu.choice "back", -> { choices }
       end
     end
 
-    def reserve_or_review
+    def reserve_or_review(restaurant_name)
+      @restaurant = Restaurant.find_by(name: restaurant_name)
       @prompt.select("Would you like to reserve or leave a review for this restaurant?") do |menu|
         menu.choice "Make a reservation", -> { make_reservation }
-        menu.choice "Leave a review", -> { leave_review }
+        menu.choice "Leave a review", -> { write_review }
       end
     end
 
@@ -101,9 +110,7 @@ class CommandLineInterface
       #ask for name
       #ask for date (09-12-19 Format)
       #ask for time
-      # puts "Please enter your name: "
-      # user_name = gets.chomp
-      # new_user = User.find_by(name: user_name)
+      puts "You are making a reservation at #{@restaurant.name}:"
       puts "For which date? "
       res_date = gets.chomp
       puts "at what time?"
@@ -122,19 +129,19 @@ class CommandLineInterface
     end
 
     #VIEW
-    def view_reservation
+    def view_reservation(reservation)
+      @reservation = reservation
        puts "You have a reservation
        at #{@reservation.restaurant.name}
        on #{@reservation.date}
        at #{@reservation.time}
        for #{@reservation.number_of_people} people!"
 
-
         @prompt.select("You can :") do |menu|
           menu.choice "edit reservation", -> { update_reservation }
           menu.choice "delete reservation", -> { delete_reservation }
           menu.choice "back", -> { view_all_reservations }
-        end
+      end
     end
 
 
@@ -194,8 +201,13 @@ class CommandLineInterface
     end
 
     ########################REVIEW METHODS############################
-    def leave_review
-      if @restaurant.users.include?(@user)
+    def write_review
+      if !@restaurant.users.include?(@user)
+        @prompt.select("You haven't visited this restaurant, would you like to make a reservation?") do |menu|
+          menu.choice "yes", -> { make_reservation }
+          menu.choice "no", -> { choices }
+        end
+      else
         puts "What would you rate this restaurant from 1-5?"
         rating = gets.chomp
 
@@ -203,32 +215,31 @@ class CommandLineInterface
         content = gets.chomp
         new_review = Review.create(rating: rating, content: content, user_id: @user.id, restaurant_id: @restaurant.id)
         choices
-      else
-        @prompt.select("You haven't visited this restaurant, would you like to make a reservation?") do |menu|
-          menu.choice "yes", -> { make_reservation }
-          menu.choice "no", -> { choices }
-        end
-
       end
     end
 
 
     def reviews
-      @prompt.select("Choose a review to edit or delete") do |menu|
+      if @user.reviews.length == 0
+        puts "You have no reviews at this time"
 
+        select_restaurant
+      end
+
+      @prompt.select("Choose a review to edit or delete") do |menu|
         Review.all.map do |review|
           if review.user_id == @user.id
-            @review = review
-            menu.choice "Review: #{review.content}\nRestaurant: #{review.restaurant}\nrating: #{review.rating}", -> { edit_or_review }
+            menu.choice "Review: #{review.content}\nRestaurant: #{review.restaurant}\nrating: #{review.rating}", -> { edit_or_delete_review(review) }
             puts "\n"
           end
         end
-
         menu.choice "back", -> { choices }
       end
     end
 
-    def edit_or_review
+
+    def edit_or_delete_review(review)
+      @review = review
       @prompt.select("Would you like to edit or delete this review?") do |menu|
         menu.choice "Edit the review", -> { edit_review }
         menu.choice "Delete the review", -> { delete_review }
@@ -242,13 +253,17 @@ class CommandLineInterface
       puts "What comments do you have about this restaurant?"
       content = gets.chomp
 
+      restaurant = @review.restaurant
+      @restaurant = Restaurant.find_by(name: restaurant)
       @review.update(rating: rating, content: content, user_id: @user.id, restaurant_id: @restaurant.id)
       choices
     end
 
     def delete_review
-      @review.destroy
-      puts "The review has been deleted"
+      @prompt.select("are you sure?") do |menu|
+        menu.choice "yes", -> { @review.destroy }
+        menu.choice "no", -> { reviews }
+      end
       choices
     end
 
@@ -267,7 +282,7 @@ class CommandLineInterface
       @prompt.select("what do you want to do today?") do |menu|
         menu.choice 'Choose a restaurant to make a reservation or leave a review', -> { select_restaurant }
         menu.choice 'View/edit your reservations', -> { view_all_reservations }
-        menu.choice 'See your reviews', -> { reviews }
+        menu.choice 'See or edit your reviews', -> { reviews }
         menu.choice 'View your favorite restaurants', -> { view_favorite_restaurants }
         menu.choice 'exit'
       end

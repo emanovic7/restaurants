@@ -8,3 +8,4 @@ gem "require_all"
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
 gem "tty-prompt"
 gem "rest-client"
+gem "http"
