@@ -25,6 +25,17 @@ class User < ActiveRecord::Base
   #   end
   # end
 
+  # def reviews
+  #   Review.all.map do |review|
+  #     if review.user_id == self.id
+  #       puts "Review: #{review.content}"
+  #       puts "for: #{review.restaurant}"
+  #       puts "rating: #{review.rating}"
+  #     end
+  #   end
+  # end
+
+
 
 
 end

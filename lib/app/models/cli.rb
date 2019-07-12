@@ -85,22 +85,23 @@ class CommandLineInterface
      review_array = Review.where(user_id: user_id = @user.id).where(rating: rating = 5)
 
 
-     if review_array.length == 0
-       puts "you haven't rated any restaurants 5 stars you grouch"
-     else
-       puts "These are the restaurants you've rated 5 stars or more"
-       review_array.map do |review|
-         restaurant = Restaurant.find(review.restaurant_id)
-         restaurant_names << restaurant.name
-       end
-     end
-         restaurant_names.uniq!
+    if review_array.length == 0
+      puts "you haven't rated any restaurants 5 stars you grouch"
+    else
+      puts "These are the restaurants you've rated 5 stars or more"
+      review_array.map do |review|
+        restaurant = Restaurant.find(review.restaurant_id)
+        restaurant_names << restaurant.name
+      end
+    end
+        restaurant_names.uniq!
 
-         restaurant_names.each do |restaurant_name|
-           puts restaurant_name
-         end
-     choices
-   end
+        restaurant_names.each do |restaurant_name|
+          puts restaurant_name
+        end
+        puts "######################################################"
+    choices
+  end
 
 
 
@@ -359,7 +360,6 @@ class CommandLineInterface
 
       greeting_prompt
     end
-
 
     def run
       header_message
