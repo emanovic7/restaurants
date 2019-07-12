@@ -19,15 +19,15 @@ class User < ActiveRecord::Base
   # self.reservations.all.each_with_index(1) do |reservation, i|
 
 
-  def reviews
-    Review.all.map do |review|
-      if review.user_id == self.id
-        puts "Review: #{review.content}"
-        puts "for: #{review.restaurant}"
-        puts "rating: #{review.rating}"
-      end
-    end
-  end
+  # def reviews
+  #   Review.all.map do |review|
+  #     if review.user_id == self.id
+  #       puts "Review: #{review.content}"
+  #       puts "for: #{review.restaurant}"
+  #       puts "rating: #{review.rating}"
+  #     end
+  #   end
+  # end
 
 
 
