@@ -20,8 +20,6 @@ class CommandLineInterface
       puts "Welcome to Make Res, #{new_user.name}"
       @user = new_user
 
-      puts `clear`
-
       choices
     end
 
@@ -49,16 +47,17 @@ class CommandLineInterface
           menu.choice "yes", -> { select_restaurant }
           menu.choice "no", -> { choices }
         end
-     end
+     else
 
-      @prompt.select("Here are your reservations") do |menu|
-        Reservation.all.map do |reservation|
-          # @reservation = reservation
-          if reservation.user_id == @user.id
-            menu.choice "#{reservation.restaurant.name} - #{reservation.time}", -> { view_reservation(reservation) }
+        @prompt.select("Here are your reservations") do |menu|
+          Reservation.all.map do |reservation|
+            # @reservation = reservation
+            if reservation.user_id == @user.id
+              menu.choice "#{reservation.restaurant.name} - #{reservation.time}", -> { view_reservation(reservation) }
+            end
           end
+          menu.choice "back", -> { choices }
         end
-        menu.choice "back", -> { choices }
       end
 
    end
@@ -108,19 +107,25 @@ class CommandLineInterface
       @prompt.select("Would you like to reserve or leave a review for this restaurant?") do |menu|
         menu.choice "Make a reservation", -> { make_reservation }
         menu.choice "Leave a review", -> { write_review }
+        menu.choice "Back", -> { choices }
       end
     end
 
     #MAKE RESERVATION
     def make_reservation
+      time = Time.new
       #ask for name
       #ask for date (09-12-19 Format)
       #ask for time
       # puts "Please enter your name: "
       # user_name = gets.chomp
       # new_user = User.find_by(name: user_name)
+      #binding.pry
       puts "You are making a reservation at #{@restaurant.name}:"
+      puts "This restaurant has had #{@restaurant.users.length} visitor(s) this month."
+      puts "#######################################"
       puts "For which date? "
+      puts  time.strftime("today is %A %B %d")
       res_date = gets.chomp
       puts "at what time?"
       res_time = gets.chomp
