@@ -42,7 +42,7 @@ class CommandLineInterface
     end
 
     def view_all_reservations
-      puts `clear`
+      puts `clear`  
 
       if @user.reservations.length == 0
         @prompt.select("You have no reservations at this time, would you like to make one?") do |menu|
