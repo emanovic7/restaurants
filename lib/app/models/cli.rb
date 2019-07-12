@@ -1,24 +1,32 @@
-
 class CommandLineInterface
+
 
   def initialize
     @prompt = TTY::Prompt.new
+    @font = TTY::Font.new(:doom)
     @user = nil
     @reservation = nil
     @restaurant = nil
     @review = nil
+    @pastel = Pastel.new
   end
 
     ###############################USER METHODS#######################################
     def new_user
+
       puts "Please enter your name: "
       user_input = gets.chomp
       new_user = User.create(name: user_input)
       puts "Welcome to Make Res, #{new_user.name}"
       @user = new_user
+
+      puts `clear`
+
+      choices
     end
 
     def returning_user
+
       puts "Please enter your name: "
       user_input = gets.chomp
       ret_user = User.find_by(name: user_input)
@@ -26,12 +34,16 @@ class CommandLineInterface
           puts "user name not found, please try again or create an account"
           greeting_prompt
         else
+          puts `clear`
+          @user = ret_user
           puts "Welcome back, #{ret_user.name}!"
+          choices
         end
-        @user = ret_user
     end
 
     def view_all_reservations
+      puts `clear`
+
       if @user.reservations.length == 0
         @prompt.select("You have no reservations at this time, would you like to make one?") do |menu|
           menu.choice "yes", -> { select_restaurant }
@@ -41,6 +53,7 @@ class CommandLineInterface
 
       @prompt.select("Here are your reservations") do |menu|
         Reservation.all.map do |reservation|
+          # @reservation = reservation
           if reservation.user_id == @user.id
             menu.choice "#{reservation.restaurant.name} - #{reservation.time}", -> { view_reservation(reservation) }
           end
@@ -65,33 +78,40 @@ class CommandLineInterface
      choices
    end
 
+   def view_favorite_restaurants
+     puts `clear`
+     restaurant = nil
+     restaurant_names = []
+     review_array = Review.where(user_id: user_id = @user.id).where(rating: rating = 5)
 
 
+     if review_array.length == 0
+       puts "you haven't rated any restaurants 5 stars you grouch"
+     else
+       puts "These are the restaurants you've rated 5 stars or more"
+       review_array.map do |review|
+         restaurant = Restaurant.find(review.restaurant_id)
+         restaurant_names << restaurant.name
+       end
+     end
+         restaurant_names.uniq!
 
-
+         restaurant_names.each do |restaurant_name|
+           puts restaurant_name
+         end
+     choices
+   end
 
 
 
     ##########################RESTAURANT METHODS#############################
     #SELECT
     def select_restaurant
-      all_restaurants = []
-      puts "What cuisine would you like?"
-      cuisine = gets.chomp
-      puts "Where in New York would you like to search for?"
-      area = gets.chomp
-      YelpApiAdapter.search(cuisine, area).each do |restaurant_hash|
-        restaurant_hash.map do |restaurant_key, restaurant_value|
-          if restaurant_key == "name"
-            all_restaurants << restaurant_value
-          end
-        end
-      end
-
+      #puts `clear`
       @prompt.select("pick a restaurant") do |menu|
-        all_restaurants.map do |restaurant|
-        # Restaurant.all.map do |restaurant|
-          menu.choice restaurant, -> { reserve_or_review(restaurant) }
+        Restaurant.all.map do |restaurant|
+          # @restaurant = restaurant
+          menu.choice restaurant.name, -> { reserve_or_review(restaurant.name) }
         end
         menu.choice "back", -> { choices }
       end
@@ -110,16 +130,19 @@ class CommandLineInterface
       #ask for name
       #ask for date (09-12-19 Format)
       #ask for time
+      # puts "Please enter your name: "
+      # user_name = gets.chomp
+      # new_user = User.find_by(name: user_name)
       puts "You are making a reservation at #{@restaurant.name}:"
       puts "For which date? "
       res_date = gets.chomp
       puts "at what time?"
       res_time = gets.chomp
-      puts "for how many people?(1-7 people)"
+      puts "for how many people?"
       res_num = gets.chomp
-
+      # binding.pry
       reservation = Reservation.create(user_id: @user.id, restaurant_id: @restaurant.id, time: res_time, date: res_date, number_of_people: res_num )
-
+      puts "#########################################################################"
       puts "You have just made a reservation at #{reservation.restaurant.name}"
       puts "on #{reservation.date}"
       puts "at #{reservation.time}"
@@ -130,6 +153,7 @@ class CommandLineInterface
 
     #VIEW
     def view_reservation(reservation)
+      puts `clear`
       @reservation = reservation
        puts "You have a reservation
        at #{@reservation.restaurant.name}
@@ -147,9 +171,10 @@ class CommandLineInterface
 
     #DELETE
     def delete_reservation
+      puts `clear`
       @prompt.select("are you sure?") do |menu|
         menu.choice "yes", -> { @reservation.destroy }
-        menu.choice "no", -> { view_reservation }
+        menu.choice "no", -> { view_reservation(@reservation) }
       end
       view_all_reservations
     end
@@ -157,6 +182,7 @@ class CommandLineInterface
 
     #UPDATE
     def update_reservation
+      puts `clear`
       @prompt.select("What would you like to change?") do |menu|
         menu.choice 'I want to change the date', -> { change_date }
         menu.choice 'I want to change the time', -> { change_time }
@@ -165,6 +191,7 @@ class CommandLineInterface
     end
 
     def change_date
+      puts `clear`
       puts "When would you like to change the date to?"
       new_date = gets.chomp
       @reservation.update(date: new_date)
@@ -177,6 +204,7 @@ class CommandLineInterface
     end
 
     def change_time
+      puts `clear`
       puts "When would you like to change the time to?"
       new_time = gets.chomp
       @reservation.update(time: new_time)
@@ -189,6 +217,7 @@ class CommandLineInterface
     end
 
     def change_num_people
+      puts `clear`
       puts "When would you like to change the number of people in your party to?"
       new_num = gets.chomp
       @reservation.update(number_of_people: new_num)
@@ -202,6 +231,7 @@ class CommandLineInterface
 
     ########################REVIEW METHODS############################
     def write_review
+      puts `clear`
       if !@restaurant.users.include?(@user)
         @prompt.select("You haven't visited this restaurant, would you like to make a reservation?") do |menu|
           menu.choice "yes", -> { make_reservation }
@@ -220,6 +250,7 @@ class CommandLineInterface
 
 
     def reviews
+      puts `clear`
       if @user.reviews.length == 0
         puts "You have no reviews at this time"
 
@@ -239,6 +270,7 @@ class CommandLineInterface
 
 
     def edit_or_delete_review(review)
+      puts `clear`
       @review = review
       @prompt.select("Would you like to edit or delete this review?") do |menu|
         menu.choice "Edit the review", -> { edit_review }
@@ -248,6 +280,7 @@ class CommandLineInterface
     end
 
     def edit_review
+      puts `clear`
       puts "What would you rate this restaurant from 1-5?"
       rating = gets.chomp
       puts "What comments do you have about this restaurant?"
@@ -255,30 +288,33 @@ class CommandLineInterface
 
       restaurant = @review.restaurant
       @restaurant = Restaurant.find_by(name: restaurant)
+      #binding.pry
       @review.update(rating: rating, content: content, user_id: @user.id, restaurant_id: @restaurant.id)
       choices
     end
 
     def delete_review
+      puts `clear`
       @prompt.select("are you sure?") do |menu|
         menu.choice "yes", -> { @review.destroy }
         menu.choice "no", -> { reviews }
       end
-      choices
+      reviews
     end
 
     ########################PROMPT METHODS #########################################################
     def greeting_prompt
-      puts "Welcome To MaKe Res"
-      puts "your best way to make reservations"
 
       @prompt.select("Select an option") do |menu|
         menu.choice 'returning user', -> { returning_user }
         menu.choice 'new user', -> { new_user }
+        menu.choice 'just a quick search', -> { yelp_results }
+        menu.choice 'quit app'
       end
     end
 
     def choices
+      #puts `clear`
       @prompt.select("what do you want to do today?") do |menu|
         menu.choice 'Choose a restaurant to make a reservation or leave a review', -> { select_restaurant }
         menu.choice 'View/edit your reservations', -> { view_all_reservations }
@@ -288,10 +324,46 @@ class CommandLineInterface
       end
     end
 
+    def header_message
+      puts @pastel.yellow(@font.write("WELCOME TO MAKE RES"))
+      puts @font.write("your best way")
+      puts @font.write("to make reservations")
+    end
+
+
+    def yelp_results
+      puts `clear`
+
+      final_hash = {}
+
+      puts "what are you looking for?"
+      term = gets.chomp
+      puts "where are you located?"
+      location = gets.chomp
+
+      Yelp.search(term, location).each do |result_hash|
+          name = result_hash["name"]
+          number = result_hash["display_phone"]
+          price = result_hash["price"]
+          final_hash[name] = []
+          final_hash[name] << number
+          final_hash[name] << price
+          #binding.pry
+      end
+
+
+      puts "these are some #{term} restaurants we found in #{location}"
+      final_hash.each_with_index do |(restaurant, restaurant_data), i|
+        puts "#{i+1}. #{restaurant} - #{restaurant_data[0]} - #{restaurant_data[1]}."
+      end
+
+      greeting_prompt
+    end
+
 
     def run
+      header_message
       greeting_prompt
-      choices
     end
 
 
