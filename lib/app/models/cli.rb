@@ -125,7 +125,7 @@ class CommandLineInterface
       puts "This restaurant has had #{@restaurant.users.length} visitor(s) this month."
       puts "#######################################"
       puts "For which date? "
-      puts  time.strftime("today is %A %B %d")
+      puts  time.strftime("today is %A %B %d")  
       res_date = gets.chomp
       puts "at what time?"
       res_time = gets.chomp
