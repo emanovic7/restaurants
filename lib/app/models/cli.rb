@@ -7,8 +7,7 @@ class CommandLineInterface
     @user = nil
     @reservation = nil
     @restaurant = nil
-    @review = nil
-    @pastel = Pastel.new
+
   end
 
     ###############################USER METHODS#######################################
@@ -42,6 +41,7 @@ class CommandLineInterface
     end
 
     def view_all_reservations
+
       puts `clear`
 
       if @user.reservations.length == 0
@@ -88,20 +88,12 @@ class CommandLineInterface
       #puts `clear`
       @prompt.select("pick a restaurant") do |menu|
         Restaurant.all.map do |restaurant|
-          # @restaurant = restaurant
-          menu.choice restaurant.name, -> { reserve_or_review(restaurant.name) }
+
         end
         menu.choice "back", -> { choices }
       end
     end
 
-    def reserve_or_review(restaurant_name)
-      @restaurant = Restaurant.find_by(name: restaurant_name)
-      @prompt.select("Would you like to reserve or leave a review for this restaurant?") do |menu|
-        menu.choice "Make a reservation", -> { make_reservation }
-        menu.choice "Leave a review", -> { write_review }
-      end
-    end
 
     #MAKE RESERVATION
     def make_reservation
@@ -111,16 +103,12 @@ class CommandLineInterface
       # puts "Please enter your name: "
       # user_name = gets.chomp
       # new_user = User.find_by(name: user_name)
-      puts "You are making a reservation at #{@restaurant.name}:"
+
       puts "For which date? "
       res_date = gets.chomp
       puts "at what time?"
       res_time = gets.chomp
-      puts "for how many people?"
-      res_num = gets.chomp
-      # binding.pry
-      reservation = Reservation.create(user_id: @user.id, restaurant_id: @restaurant.id, time: res_time, date: res_date, number_of_people: res_num )
-      puts "#########################################################################"
+
       puts "You have just made a reservation at #{reservation.restaurant.name}"
       puts "on #{reservation.date}"
       puts "at #{reservation.time}"
@@ -300,11 +288,7 @@ class CommandLineInterface
     def choices
       #puts `clear`
       @prompt.select("what do you want to do today?") do |menu|
-        menu.choice 'Choose a restaurant to make a reservation or leave a review', -> { select_restaurant }
-        menu.choice 'View/edit your reservations', -> { view_all_reservations }
-        ################## Changes: "see or edit reviews" for clarity
-        menu.choice 'See or edit your reviews', -> { reviews }
-        menu.choice 'View your favorite restaurants', -> { view_favorite_restaurants }
+
         menu.choice 'exit'
       end
     end
